@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>index.html</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" crossorigin=""/>
+        
+<style>
+/* CSS - style.css */
+#mapa {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+.player {
+    font-size: 5vh;
+}
+</style>
+
+    </head>
+    <body>
+        <div id="mapa"></div>
+
+        <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" crossorigin=""></script>
+        <script >
+/* Javascript - app.js */
+
+const app = {
+    init: function() {
+        //Inicializa o mapa
+        this.mapa = L.map("mapa");
+        //Define o modelo de mapa
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 20,
+            minZoom: 16
+        }).addTo(this.mapa);
+        //Configura a geolocalização
+        this.mapa.locate({
+            setView: true,
+            watch: true,
+            enableHighAccuracy: true
+        });
+        //Cria o marcador do jogador
+        this.player = new L.Marker([0, 0], {
+            icon: new L.divIcon({
+                className: "player",
+                html: "<span>&#x1F574</span>"
+            })
+        }).addTo(this.mapa);
+        //Configura o evento para mover o jogador
+        this.mapa.on("locationfound", (evt)=>this.onLocationFound(evt));
+    },
+    onLocationFound: function(evt) {
+        this.player.setLatLng(evt.latlng);
+    }
+};
+
+app.init();
+
+</script>
+    </body>
+</html>

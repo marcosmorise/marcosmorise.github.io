@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -19,6 +18,7 @@
 .player {
     font-size: 5vh;
 }
+
 </style>
 
     </head>
@@ -26,6 +26,46 @@
         <div id="mapa"></div>
 
         <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" crossorigin=""></script>
+        <script >
+/* Javascript - player.js */
+const player = {
+    init: function() {
+        this.icon = new L.divIcon({
+            className: "player",
+            html: "<span id='playerIcon'>&#x1F574</span>"
+        });
+        this.marker = new L.Marker([0, 0], {
+            icon: this.icon
+        });
+    },
+    setIcon: function(icon){
+        document.querySelector("#playerIcon").innerHTML = icon;
+    },
+    selectModel: function() {
+        let skinTones = ["","&#x1F3FB;","&#x1F3FC;","&#x1F3FD;","&#x1F3FE;","&#x1F3FF;"];
+        let genders = ["","&#x200D;&#x2640;&#xFE0F;","&#x200D;&#x2642;&#xFE0F;"];
+        let models = ["&#x1F64E;"];
+
+        let dialog = document.createElement("dialog");
+        for(let tone of skinTones) {
+            for(let gender of genders) {
+                let button = document.createElement("button");
+                button.innerHTML = `${models[0]}${tone}${gender}`;
+                button.onclick = () => {
+                    this.setIcon(`${models[0]}${tone}${gender}`);
+                    dialog.close();
+                };
+                dialog.appendChild(button);
+            }
+            dialog.appendChild(document.createElement("br"));
+        }
+        
+        dialog.onclose = () => document.body.removeChild(dialog);
+        document.body.appendChild(dialog);
+        dialog.showModal();
+    },
+};
+</script>
         <script >
 /* Javascript - app.js */
 
@@ -35,8 +75,11 @@ const app = {
         this.mapa = L.map("mapa");
         //Define o modelo de mapa
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        //L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        //L.tileLayer("https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png", {
+        //L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
             maxZoom: 18,
-            minZoom: 16
+            minZoom: 18
         }).addTo(this.mapa);
         //Configura a geolocalização
         this.mapa.locate({
@@ -45,17 +88,44 @@ const app = {
             enableHighAccuracy: true
         });
         //Cria o marcador do jogador
-        this.player = new L.Marker([0, 0], {
-            icon: new L.divIcon({
-                className: "player",
-                html: "<span>&#x1F574</span>"
-            })
-        }).addTo(this.mapa);
+        player.init();
+        player.marker.addTo(this.mapa);
+        this.items = [];
         //Configura o evento para mover o jogador
-        this.mapa.on("locationfound", (evt)=>this.onLocationFound(evt));
+        this.mapa.on("locationfound", (evt) => this.onLocationFound(evt));
+        player.selectModel();
     },
     onLocationFound: function(evt) {
-        this.player.setLatLng(evt.latlng);
+        player.marker.setLatLng(evt.latlng);
+        if(this.items.length === 0) {
+            this.distObj();
+        }
+        let from = player.marker.getLatLng();
+        for(let item of this.items) {
+            let to = item.getLatLng();
+            if(from.distanceTo(to) < 0.01) {
+                this.items.splice(1, this.items.indexOf(item));
+                this.mapa.removeLayer(item);
+            }
+        }
+    },
+    distObj: function() {
+        this.items = [];
+        let objs = ["&#x1F388;"];
+        let latLngIni = player.marker.getLatLng();
+        for(let i = 0; i < 5; i++) {
+            let lat = latLngIni.lat - 0.001 + Math.random() * 0.002;
+            let lng = latLngIni.lng - 0.001 + Math.random() * 0.002;
+            
+            let obj = new L.Marker([lat, lng], {
+                icon: new L.divIcon({
+                    className: "player",
+                    html: "<span>&#x1F388;</span>"
+                })
+            }).addTo(this.mapa);
+            
+            this.items.push(obj);
+        }
     }
 };
 

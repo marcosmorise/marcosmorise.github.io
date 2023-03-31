@@ -103,7 +103,7 @@ const app = {
         let from = player.marker.getLatLng();
         for(let item of this.items) {
             let to = item.getLatLng();
-            if(from.distanceTo(to) < 0.01) {
+            if(from.distanceTo(to) < 1.5) {
                 this.items.splice(1, this.items.indexOf(item));
                 this.mapa.removeLayer(item);
             }

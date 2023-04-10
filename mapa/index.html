@@ -96,17 +96,27 @@ const app = {
         player.selectModel();
     },
     onLocationFound: function(evt) {
+        //Define a geolocalização do jogador
         player.marker.setLatLng(evt.latlng);
-        if(this.items.length === 0) {
-            this.distObj();
-        }
+        //Obtem a geolocalização do jogador para calcular a distância
         let from = player.marker.getLatLng();
+        //Verifica a distância do jogador com o itens
         for(let item of this.items) {
             let to = item.getLatLng();
-            if(from.distanceTo(to) < 1.5) {
-                this.items.splice(1, this.items.indexOf(item));
+            let dist = from.distanceTo(to);
+            //Se a distância for menor que 10m ou maior que 500m
+            if(dist < 10 || dist > 500) {
+                //Remove o item
+                this.items.splice(this.items.indexOf(item), 1);
                 this.mapa.removeLayer(item);
+            } else {
+                //Define o balão popup com a distância
+                item.bindPopup(parseInt(dist)+"m");
             }
+        }
+        //Distribui os itens se não houver mais itens na tela
+        if(this.items.length === 0) {
+            this.distObj();
         }
     },
     distObj: function() {
